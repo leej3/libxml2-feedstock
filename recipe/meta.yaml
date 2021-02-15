@@ -12,16 +12,26 @@ source:
     - 0004-CVE-2017-8872.patch
 
 build:
+{% if bootstrapping == 'yes' %}
+  # Please increment by two
+  number: 0
+  string: h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}_bootstrapping
+{% else %}
+  # Keep above the number of the _bootstrapping package
   number: 3
+{% endif %}
   run_exports:
     # remove symbols at minor versions.
     #    https://abi-laboratory.pro/tracker/timeline/libxml2/
     - {{ pin_subpackage('libxml2', max_pin='x.x') }}
+  script_env:
+    - BOOTSTRAPPING={{ bootstrapping }}
 
 requirements:
   build:
-    - libtool  # [unix]
     - {{ compiler('c') }}
+{% if bootstrapping != 'yes' %}
+    - libtool  # [unix]
     - autoconf  # [not win]
     - automake  # [not win]
     - libtool  # [not win]
@@ -38,6 +48,7 @@ requirements:
     - libiconv
     - xz  # [not win]
     - zlib
+{% endif %}
 
 test:
   files:
